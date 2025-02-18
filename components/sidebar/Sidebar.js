@@ -33,7 +33,7 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <div className="flex min-h-screen relative">
+    <div className="flex  min-h-screen relative">
       {/* Sidebar */}
       <div
         ref={sidebarRef}
@@ -51,10 +51,10 @@ export default function Sidebar() {
             )}
           </button>
           {isOpen && (
-            <Image src="/logo.png" alt="Logo" width={23} height={23} />
+            <Image src="/logo.png" alt="Logo" width={22} height={22} />
           )}
         </div>
-        <div className="mt-16 flex flex-col gap-2">
+        <div className="mt-16 flex flex-col">
           <SidebarList
             isOpen={isOpen}
             name="Dashboard"
@@ -65,7 +65,7 @@ export default function Sidebar() {
           />
           <SidebarList
             isOpen={isOpen}
-            name="Print Barcode"
+            name="Print"
             icon={<AiOutlinePrinter size={25} />}
             path="/print-barcode"
             pathname={pathname}
@@ -73,7 +73,7 @@ export default function Sidebar() {
           />
           <SidebarList
             isOpen={isOpen}
-            name="Master Data"
+            name="Data Master"
             icon={<AiOutlineDatabase size={25} />}
             path="/master"
             pathname={pathname}

@@ -8,18 +8,33 @@ export default function SidebarList({
   pathname,
   onClick,
 }) {
-  const isActive = pathname === path;
+  const isActive = pathname === path || pathname.startsWith(`${path}/`);
+
+  const baseClasses =
+    "flex items-center justify-start mb-1 mx-3 p-2 rounded transition-all duration-300 ease-in-out";
+  const activeClasses = "bg-blue-400 text-white hover:text-black";
+  const inactiveClasses = "text-black hover:bg-blue-200 hover:text-blue-600";
 
   return (
     <Link
       href={path}
-      className={`flex items-center justify-start mb-2 mx-3 hover:bg-blue-200 p-2 rounded ${
-        isActive ? "bg-blue-400 text-white" : "text-black"
-      }`}
       onClick={onClick}
+      aria-current={isActive ? "page" : undefined}
     >
-      {icon}
-      {isOpen && <span className="ml-2">{name}</span>}
+      <div
+        className={`${baseClasses} ${
+          isActive ? activeClasses : inactiveClasses
+        }`}
+      >
+        <div className="flex-shrink-0">{icon}</div>
+        <span
+          className={`ml-2 transition-opacity whitespace-nowrap overflow-hidden text-ellipsis ${
+            isOpen ? "opacity-100 max-w-[200px]" : "opacity-0 hidden max-w-0"
+          }`}
+        >
+          {name}
+        </span>
+      </div>
     </Link>
   );
 }

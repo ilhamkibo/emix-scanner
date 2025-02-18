@@ -6,6 +6,7 @@ export default async function Print() {
       className="flex flex-col items-center justify-center"
       style={{ height: "calc(100vh - 64px)" }}
     >
+      {/* Heading Section */}
       <div className="-mt-24">
         <h1 className="text-center text-2xl font-semibold">
           Scan the barcode to print

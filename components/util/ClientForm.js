@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ClientForm() {
   const [currentBarcode, setCurrentBarcode] = useState("");
   const [batchNumber, setBatchNumber] = useState(""); // State untuk menyimpan batch number
   const [isLoading, setIsLoading] = useState(false); // State untuk loading
+  const router = useRouter();
 
   // Handle API call
   const handleApiCall = async (barcode) => {
@@ -41,6 +43,8 @@ export default function ClientForm() {
     setCurrentBarcode(e.target.value); // Update state as user types
   };
 
+  const processSubmit = () => {};
+
   return (
     <div className="flex flex-col items-center justify-center gap-4">
       <form
@@ -51,24 +55,31 @@ export default function ClientForm() {
           type="text"
           name="barcode"
           id="barcode"
+          autoFocus
           value={currentBarcode}
           onChange={handleChange} // Handle user input
           placeholder="Enter barcode"
           className="w-60 sm:w-100 md:w-[500px] lg:w-[600px] xl:w-[800px] h-14 rounded-xl border border-gray-300 px-4 py-2 shadow-sm transition-all duration-300 ease-in-out focus:shadow-md focus:outline-none"
         />
-        <button
-          type="submit"
-          className="h-14 px-6 rounded-xl bg-blue-500 text-white shadow-sm transition-all duration-300 ease-in-out hover:bg-blue-600 focus:outline-none"
-        >
-          {isLoading ? "Loading..." : "Submit"}
-        </button>
       </form>
 
       {/* Display Batch Number after successful scan */}
       {batchNumber && (
-        <div className="mt-4 text-center text-xl font-semibold">
-          <h2>Batch Number: {batchNumber}</h2>
-        </div>
+        <>
+          <div className="mt-4 text-center text-xl font-semibold">
+            <h2>Batch Number: {batchNumber}</h2>
+          </div>
+          <div className="text-center text-xl font-semibold">
+            <button
+              onClick={() =>
+                router.push(`/print-barcode/${batchNumber}?process=1`)
+              }
+              className=" hover:bg-blue-700/60 text-gray-700 border border-gray-400 hover:border-none hover:text-white font-normal py-1 px-3 rounded"
+            >
+              Process &#x279C;
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

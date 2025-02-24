@@ -22,10 +22,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        suppressHydrationWarning={true}
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="flex min-h-screen">
+        <div suppressHydrationWarning={true} className="flex min-h-screen">
           {/* Sidebar */}
           <Sidebar />
           <div className="flex-1 transition-all duration-300">

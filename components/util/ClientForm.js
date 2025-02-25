@@ -13,7 +13,7 @@ export default function ClientForm() {
   const handleApiCall = async (barcode) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/batch?batchCode=${barcode}`);
+      const response = await fetch(`/api/batch/${barcode}`);
       const data = await response.json();
       if (data?.data) {
         const weightPerPack = data.data.quantity / data.data.total_pack;

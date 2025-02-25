@@ -1,22 +1,15 @@
 import WeightValue from "@/components/util/WeightValue";
 
 export default async function Print({ params, searchParams }) {
-  const batchCode = params.batchCode; // Tidak perlu await untuk params
-  const process = searchParams?.process || "1"; // Gunakan properti langsung, default ke "1" jika tidak ada
+  const batchCode = (await params).batchCode; // Tidak perlu await untuk params
+  const process = (await searchParams).process || "1"; // Gunakan properti langsung, default ke "1" jika tidak ada
 
   // Function to handle API call
   const postBatchData = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/batch", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          batchCode: batchCode,
-          packIndex: parseInt(process), // Konversi process ke integer
-        }),
-      });
+      const response = await fetch(
+        `http://localhost:3000/api/batch/${batchCode}`
+      );
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);

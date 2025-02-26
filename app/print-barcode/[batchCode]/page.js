@@ -5,30 +5,27 @@ export default async function Print({ params, searchParams }) {
   const process = (await searchParams).process || "1"; // Gunakan properti langsung, default ke "1" jika tidak ada
 
   // Function to handle API call
-  const postBatchData = async () => {
+  const fetchBatchData = async () => {
     try {
       const response = await fetch(
         `http://localhost:3000/api/batch/${batchCode}`
       );
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      return data; // Kembalikan data untuk digunakan lebih lanjut
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
+      return await response.json();
     } catch (error) {
-      console.error("Failed to post batch data:", error);
+      console.error("Failed to fetch batch data:", error);
       return null;
     }
   };
 
   // Call API and store response
-  const batchData = await postBatchData();
-  const packCode = batchData?.data?.pack?.packCode || "N/A";
-  const packQuantity = batchData?.data?.pack?.quantity || "N/A";
-  const totalPack = batchData?.data?.pack?.total_pack || "N/A";
+  const batchData = await fetchBatchData();
+  const packQuantity =
+    batchData?.data?.quantity / batchData?.data?.total_pack || "N/A";
+  const packUnit = batchData?.data?.material?.unit || "N/A";
+  const totalPack = batchData?.data?.total_pack || "N/A";
+  const packCode = batchCode ? `${batchCode}-P${process}` : "N/A";
+  const batchId = batchData?.data?.id || "N/A";
 
   return (
     <div
@@ -36,10 +33,13 @@ export default async function Print({ params, searchParams }) {
       style={{ height: "calc(100vh - 64px)" }}
     >
       <WeightValue
-        weight={packQuantity}
+        pack_code={packCode}
         process={process}
         batchCode={batchCode}
         totalPack={totalPack}
+        quantity={packQuantity}
+        batch_id={batchId}
+        packUnit={packUnit}
       />
       <hr className="mt-4 w-1/2 border-gray-400" />
       <div className="flex flex-col gap-4 justify-center items-center">
@@ -50,7 +50,9 @@ export default async function Print({ params, searchParams }) {
           <h1 className="text-center text-lg">
             Batch Code: <span className="font-semibold">{batchCode}</span>
           </h1>
-          <h1 className="text-center text-lg">Target Qty: {packQuantity} Kg</h1>
+          <h1 className="text-center text-lg">
+            Target Qty: {packQuantity} {packUnit}
+          </h1>
         </div>
       </div>
     </div>

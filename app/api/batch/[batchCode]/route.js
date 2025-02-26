@@ -5,7 +5,7 @@ export async function GET(req, { params }) {
     const { batchCode, packIndex } = await params; // Extract batchCode from the dynamic route
     console.log("🚀 ~ GET ~ batchCode:", batchCode, packIndex);
 
-    const response = await fetch(`${process.env.API_URL}/pack/${batchCode}`);
+    const response = await fetch(`${process.env.API_URL}/batch/${batchCode}`);
 
     const data = await response.json();
 

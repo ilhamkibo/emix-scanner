@@ -5,9 +5,7 @@ import Link from "next/link";
 import { FaCheck } from "react-icons/fa";
 import { FaTimes } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import jsPDF from "jspdf";
-import JsBarcode from "jsbarcode";
-import { QRCode } from "react-qrcode-logo";
+import QRCode from "react-qr-code";
 
 export default function WeightValue({
   pack_code,
@@ -17,6 +15,7 @@ export default function WeightValue({
   batch_id,
   quantity,
   material,
+  packUnit,
 }) {
   const [weight, setWeight] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
@@ -51,7 +50,7 @@ export default function WeightValue({
     setIsFinished(totalPack == process);
   }, [totalPack, process]);
 
-  const isOK = weight > 0.9;
+  const isOK = weight > quantity;
 
   const postPackData = async () => {
     try {
@@ -72,11 +71,13 @@ export default function WeightValue({
       }
 
       const result = await response.json();
-      setMessage(`Data process-${process} successfully posted!`);
+      console.log("🚀 ~ postPackData ~ result:", result);
+      setMessage(result.message);
       setShowMessage(true);
-      setTimeout(() => setShowMessage(false), 1000);
-
-      generateQRCodePDF(); // Panggil fungsi cetak setelah berhasil POST
+      setTimeout(() => {
+        setShowMessage(false);
+        handlePrint(); // Panggil fungsi cetak setelah berhasil POST
+      }, 1000);
     } catch (error) {
       setMessage("Error posting data. Please try again.");
       setShowMessage(true);
@@ -90,78 +91,84 @@ export default function WeightValue({
 
     await postPackData();
 
-    const nextUrl = isFinished
-      ? `/print-barcode`
-      : `/print-barcode/${batchCode}?process=${Number(process) + 1}`;
-
-    router.push(nextUrl);
+    if (isFinished) {
+      // Tunggu 1 detik sebelum mengarahkan ke "/print-barcode"
+      setTimeout(() => {
+        router.push("/print-barcode");
+      }, 1000);
+    } else {
+      // Redirect langsung ke URL baru
+      const nextUrl = `/print-barcode/${batchCode}?process=${
+        Number(process) + 1
+      }`;
+      router.push(nextUrl);
+    }
   };
 
   // Fungsi untuk mencetak barcode ke PDF
-  const generateBarcodePDF = () => {
-    const doc = new jsPDF();
-
-    // Buat elemen canvas untuk barcode
-    const canvas = document.createElement("canvas");
-    JsBarcode(canvas, pack_code, {
-      format: "CODE128",
-      height: 40,
-    });
-
-    // Tambahkan barcode ke PDF
-    const barcodeImage = canvas.toDataURL("image/png");
-    doc.addImage(barcodeImage, "PNG", 10, 20, 50, 20); // X, Y, Width, Height
-
-    // Tambahkan informasi lainnya
-    doc.setFontSize(12);
-    doc.text("Pack Code: " + pack_code, 70, 30);
-    doc.text("Material: " + material, 70, 40);
-    doc.text("Quantity: " + quantity, 70, 50);
-    doc.text("Date: " + new Date().toLocaleDateString(), 70, 60);
-
-    // Simpan PDF
-    doc.save(`${pack_code}_barcode.pdf`);
-  };
-
-  const generateQRCodePDF = () => {
-    const doc = new jsPDF();
-
-    // Buat elemen canvas untuk QR code
-    const canvas = document.createElement("canvas");
-
-    const qrCodeData = `Pack Code: ${pack_code}\nMaterial: ${material}\nQuantity: ${quantity}`;
-
-    // Generate QR code menggunakan react-qrcode-logo
-    const qrCode = new QRCode({
-      value: qrCodeData,
-      size: 200,
-      bgColor: "#000",
-      fgColor: "#df1a1a",
-    });
-
-    qrCode.render(canvas);
-
-    // Tambahkan QR code ke PDF
-    const qrCodeImage = canvas.toDataURL("image/png");
-    doc.addImage(qrCodeImage, "PNG", 10, 20, 50, 50); // X, Y, Width, Height
-
-    // Tambahkan informasi lainnya ke PDF
-    doc.setFontSize(12);
-    doc.text("Pack Code: " + pack_code, 70, 30);
-    doc.text("Material: " + material, 70, 40);
-    doc.text("Quantity: " + quantity, 70, 50);
-    doc.text("Date: " + new Date().toLocaleDateString(), 70, 60);
-
-    // Simpan PDF
-    doc.save(`${pack_code}_qrcode.pdf`);
+  const handlePrint = () => {
+    const printContents = document.getElementById("print-barcode").innerHTML;
+    const newWindow = window.open("", "_blank");
+    newWindow.document.write(`
+      <html>
+        <head>
+          <title>Print Barcode</title>
+          <style>
+            body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+          </style>
+        </head>
+        <body onload="window.print();window.close()">
+          ${printContents}
+        </body>
+      </html>
+    `);
+    newWindow.document.close();
   };
 
   return (
     <>
       <div className="-mt-20 mb-4">
-        <h1 className="text-4xl font-thin text-center">
+        {/* Template untuk mencetak barcode */}
+        <div
+          id="print-barcode"
+          style={{
+            padding: "8px",
+            display: "none",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px", // Gap between elements
+            }}
+          >
+            <div style={{ textAlign: "center" }}>
+              <p style={{ fontSize: "8px", marginBottom: "4px" }}>
+                {pack_code}
+              </p>
+              <QRCode value={pack_code} size={65} />
+            </div>
+            <div style={{ marginTop: "8px" }}>
+              <p style={{ margin: "4px 0" }}>
+                Batch No: <span style={{ fontWeight: "600" }}>{batchCode}</span>
+              </p>
+              <p style={{ margin: "4px 0" }}>
+                Material: <span style={{ fontWeight: "600" }}>{material}</span>
+              </p>
+              <p style={{ margin: "4px 0" }}>
+                Weight:{" "}
+                <span style={{ fontWeight: "600" }}>
+                  {weight} {packUnit}
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* <h1 className="text-4xl font-thin text-center">
           Now Process: {process}
-        </h1>
+        </h1> */}
         <div
           className={`fixed right-4 top-4 transition-all duration-500 ease-in-out ${
             showMessage ? "opacity-100 scale-100" : "opacity-0 scale-75"
@@ -190,22 +197,21 @@ export default function WeightValue({
         </Link>
       )}
 
-      <div className={`flex gap-4 items-center justify-center`}>
+      <div
+        className={`flex gap-4 items-center justify-center p-2 rounded border ${
+          isOK ? "border-green-600" : "border-red-600"
+        }`}
+      >
         <h3 className="text-center text-2xl font-semibold">
-          Weight ={" "}
-          <span className={`${isOK ? "text-green-600" : "text-red-600"}`}>
-            {weight === null ? "Loading..." : `${weight} kg`}
-          </span>
+          Weight: {weight === null ? "Loading..." : `${weight} kg`}
         </h3>
         <div
-          className={`flex gap-2 items-center border rounded p-2 ${
-            isOK
-              ? "border-green-400 text-green-600"
-              : "border-red-400 text-red-600"
+          className={`flex gap-1 items-center ${
+            isOK ? "text-green-600" : "text-red-600"
           }`}
         >
-          {isOK ? <FaCheck /> : <FaTimes />}
-          <h1>{isOK ? "OK" : "NG"}</h1>
+          {isOK ? <FaCheck size={20} /> : <FaTimes size={20} />}
+          <h1 className="text-xl">{isOK ? "OK" : "NG"}</h1>
         </div>
       </div>
     </>

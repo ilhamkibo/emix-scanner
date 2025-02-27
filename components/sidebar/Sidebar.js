@@ -4,7 +4,11 @@ import { GoSidebarExpand, GoSidebarCollapse } from "react-icons/go";
 import SidebarList from "./SidebarList";
 import { RxDashboard } from "react-icons/rx";
 import { usePathname } from "next/navigation";
-import { AiOutlineDatabase, AiOutlinePrinter } from "react-icons/ai";
+import {
+  AiOutlineDatabase,
+  AiOutlinePrinter,
+  AiOutlineShoppingCart,
+} from "react-icons/ai";
 import Image from "next/image";
 
 // Komponen ikon sebagai fungsi
@@ -68,6 +72,14 @@ export default function Sidebar() {
             name="Print"
             icon={<AiOutlinePrinter size={25} />}
             path="/print-barcode"
+            pathname={pathname}
+            onClick={closeSidebar} // Auto-close on click
+          />
+          <SidebarList
+            isOpen={isOpen}
+            name="Check BOM"
+            icon={<AiOutlineShoppingCart size={25} />}
+            path="/bom-list"
             pathname={pathname}
             onClick={closeSidebar} // Auto-close on click
           />

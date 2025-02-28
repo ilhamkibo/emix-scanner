@@ -61,36 +61,46 @@ export default function WeightValue({
         },
         body: JSON.stringify({
           pack_code,
-          quantity,
+          quantity: weight,
           batch_id,
         }),
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error(`Failed to post data: ${response.statusText}`);
+        setMessage(result.error || "Unknown error");
+        setShowMessage(true);
+        setTimeout(() => setShowMessage(false), 1000);
+        return result;
       }
 
-      const result = await response.json();
-      console.log("🚀 ~ postPackData ~ result:", result);
       setMessage(result.message);
       setShowMessage(true);
       setTimeout(() => {
         setShowMessage(false);
         handlePrint(); // Panggil fungsi cetak setelah berhasil POST
       }, 1000);
+
+      return result;
     } catch (error) {
       setMessage("Error posting data. Please try again.");
       setShowMessage(true);
       setTimeout(() => setShowMessage(false), 1000);
       console.error("Error posting data:", error);
+      return { error: error.message || "Unknown error" };
     }
   };
 
   const handleLinkClick = async (e) => {
     e.preventDefault();
 
-    await postPackData();
+    const result = await postPackData();
 
+    if (result?.error) {
+      console.error("Error posting data:", result.error);
+      return;
+    }
     if (isFinished) {
       // Tunggu 1 detik sebelum mengarahkan ke "/print-barcode"
       setTimeout(() => {

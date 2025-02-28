@@ -11,6 +11,7 @@ export default async function Print({ params, searchParams }) {
         `http://localhost:3000/api/batch/${batchCode}`
       );
       if (!response.ok) throw new Error(`Error: ${response.status}`);
+      console.log("🚀 ~ fetchBatchData ~ response:", response);
       return await response.json();
     } catch (error) {
       console.error("Failed to fetch batch data:", error);

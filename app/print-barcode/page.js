@@ -1,6 +1,6 @@
-import ClientForm from "@/components/util/ClientForm";
+import BatchContainer from "@/components/batchList/BatchContainer";
 
-export default async function Print() {
+export default async function Page() {
   return (
     <div
       className="flex flex-col items-center justify-center"
@@ -14,7 +14,7 @@ export default async function Print() {
 
       {/* Form Section */}
       <div className="mt-4">
-        <ClientForm />
+        <BatchContainer />
       </div>
     </div>
   );

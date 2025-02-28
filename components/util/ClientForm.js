@@ -1,36 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import BatchList from "../batchList/BatchList";
 
-export default function ClientForm() {
-  const [currentBarcode, setCurrentBarcode] = useState("");
-  const [batchData, setBatchData] = useState(null); // State untuk menyimpan data batch
+export default function ClientForm({ setData, api }) {
+  const [currentText, setCurrentText] = useState("");
   const [isLoading, setIsLoading] = useState(false); // State untuk loading
-  const router = useRouter();
 
   // Handle API call
-  const handleApiCall = async (barcode) => {
+  const handleApiCall = async (data) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/batch/${barcode}`);
-      const data = await response.json();
-      if (data?.data) {
-        const weightPerPack = data.data.quantity / data.data.total_pack;
-        setBatchData({
-          batchNumber: data.data.batch_code,
-          material: data.data.material?.name,
-          quantity: data.data.quantity,
-          unit: data.data.material?.unit,
-          totalPack: data.data.total_pack,
-          weightPerPack,
-        });
-      } else {
-        setBatchData({ error: "Batch number not found." });
-      }
+      const response = await fetch(`${api}/${data}`);
+      const result = await response.json();
+      setData(result);
     } catch (error) {
       console.error(error);
-      setBatchData({ error: "Error fetching batch data." });
+      setData({ error: "Error fetching batch data." });
     } finally {
       setIsLoading(false);
     }
@@ -39,15 +25,15 @@ export default function ClientForm() {
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (currentBarcode.trim()) {
-      handleApiCall(currentBarcode);
-      setCurrentBarcode("");
+    if (currentText.trim()) {
+      handleApiCall(currentText);
+      setCurrentText("");
     }
   };
 
   // Handle input change
   const handleChange = (e) => {
-    setCurrentBarcode(e.target.value);
+    setCurrentText(e.target.value);
   };
 
   return (
@@ -62,7 +48,7 @@ export default function ClientForm() {
           name="barcode"
           id="barcode"
           autoFocus
-          value={currentBarcode}
+          value={currentText}
           onChange={handleChange}
           placeholder="Enter barcode"
           className="w-60 sm:w-100 md:w-[500px] lg:w-[600px] xl:w-[800px] h-14 rounded-xl border border-gray-300 px-4 py-2 shadow-sm transition-all duration-300 ease-in-out focus:shadow-md focus:outline-none"
@@ -70,26 +56,14 @@ export default function ClientForm() {
       </form>
 
       {/* Display Batch Data */}
-      {batchData && (
+      {/* {batchData && (
         <div className="mt-4 text-center">
           {batchData.error ? (
             <p className="text-red-600 font-semibold">{batchData.error}</p>
           ) : (
             <>
-              <div className="text-lg font-medium">
-                <p>
-                  Batch:{" "}
-                  <span className="font-semibold">{batchData.batchNumber}</span>
-                </p>
-                <p>Material: {batchData.material}</p>
-                <p>
-                  Quantity: {batchData.quantity} {batchData.unit}
-                </p>
-                <p>
-                  Total Pack: {batchData.totalPack} pcs (
-                  {batchData.weightPerPack.toFixed(2)} {batchData.unit}/pc)
-                </p>
-              </div>
+              
+
               <button
                 onClick={() =>
                   router.push(
@@ -103,7 +77,7 @@ export default function ClientForm() {
             </>
           )}
         </div>
-      )}
+      )} */}
 
       {/* Loading Indicator */}
       {isLoading && <p className="text-gray-500 font-medium">Loading...</p>}

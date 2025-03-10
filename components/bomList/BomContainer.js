@@ -4,6 +4,7 @@ import { useState } from "react";
 import ClientForm from "../util/ClientForm";
 import { useRouter } from "next/navigation";
 import { AiOutlineCheckCircle } from "react-icons/ai";
+import MessageToast from "../util/MessageToast";
 
 export default function BomContainer() {
   const [message, setMessage] = useState("");
@@ -11,6 +12,7 @@ export default function BomContainer() {
   const [bomData, setBomData] = useState(null);
   const [packData, setPackData] = useState(null);
   const [kumpulanPack, setKumpulanPack] = useState([]);
+  const [apiResponses, setApiResponses] = useState({ success: [], failed: [] });
   const router = useRouter();
 
   // Fungsi untuk menambahkan data ke kumpulanPack
@@ -50,37 +52,40 @@ export default function BomContainer() {
   const handleSubmitData = async () => {
     try {
       const payload = {
-        bomCode: bomData.data.bom_code,
-        packs: kumpulanPack.map((pack) => ({
-          pack_id: pack.id, // Pastikan ID pack ada di objek pack
-          bom_id: bomData.data.id, // Atau gunakan ID BOM yang sesuai
-        })),
+        bom_id: bomData.data.id, // Atau gunakan ID BOM yang sesuai
+        packs: kumpulanPack.map((pack) => pack.pack_code),
       };
       console.log("🚀 ~ handleSubmitData ~ payload:", payload);
 
-      // const response = await fetch("/api/submit", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(payload),
-      // });
+      const response = await fetch("http://localhost:3000/api/bom/bom-pack", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-      // const result = await response.json();
+      const result = await response.json();
 
-      const response = { ok: true };
-      const result = { message: "Data berhasil disubmit successfully!" };
       if (response.ok) {
-        console.log("Data successfully submitted: ", result);
+        setApiResponses({
+          success: result.success || [],
+          failed: result.failed || [],
+        });
         setMessage("Data successfully submitted!");
         setShowMessage(!showMessage);
         setTimeout(() => {
           setShowMessage(false);
           setMessage("");
-          // router.push("/bom-list"); // Redirect jika diperlukan
+          setKumpulanPack([]);
+          setBomData(null);
+          router.push("/bom-list"); // Redirect jika diperlukan
         }, 1000);
       } else {
-        console.error("Error submitting data:", result);
+        setApiResponses({
+          success: result.success || [],
+          failed: result.failed || [],
+        });
         setMessage("Terjadi kesalahan, coba lagi.");
         setShowMessage(!showMessage);
         setTimeout(() => {
@@ -101,23 +106,7 @@ export default function BomContainer() {
 
   return (
     <div className="flex flex-col items-center justify-center gap-6 mx-2">
-      <div
-        className={`fixed right-4 top-4 transition-all duration-500 ease-in-out ${
-          showMessage ? "opacity-100 scale-100" : "opacity-0 scale-75"
-        }`}
-      >
-        {message && (
-          <div
-            className={`text-center text-md text-white font-medium rounded p-2 ${
-              message.includes("successfully")
-                ? "bg-green-600/80"
-                : "bg-red-600/80"
-            }`}
-          >
-            {message}
-          </div>
-        )}
-      </div>
+      <MessageToast message={message} showMessage={showMessage} />
       {bomData ? (
         <ClientForm
           api="/api/pack"
@@ -225,6 +214,33 @@ export default function BomContainer() {
           Submit Data
         </button>
       )}
+      <div className="w-full max-w-2xl text-center mt-6">
+        {apiResponses.success.length > 0 && (
+          <div className="mb-4">
+            <h3 className="text-green-600 font-semibold">Success:</h3>
+            <ul className="list-disc list-inside">
+              {apiResponses.success.map((item, index) => (
+                <li key={index}>
+                  <strong>{item.pack_code}:</strong> {item.message}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {apiResponses.failed.length > 0 && (
+          <div>
+            <h3 className="text-red-600 font-semibold">Failed:</h3>
+            <ul className="list-disc list-inside">
+              {apiResponses.failed.map((item, index) => (
+                <li key={index}>
+                  <strong>{item.pack_code}:</strong> {item.error}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

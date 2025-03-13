@@ -2,7 +2,8 @@ import { NextResponse, NextRequest } from "next/server";
 
 export async function GET(req) {
   try {
-    const response = await fetch(`${process.env.API_URL}/bom`);
+    const limit = req.nextUrl.searchParams.get("limit") || 3;
+    const response = await fetch(`${process.env.API_URL}/bom?limit=${limit}`);
     const data = await response.json();
 
     if (!response.ok) {

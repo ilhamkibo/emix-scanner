@@ -2,8 +2,16 @@ import { NextResponse, NextRequest } from "next/server";
 
 export async function GET(req) {
   try {
-    const response = await fetch(`${process.env.API_URL}/pack`);
+    const limit = req.nextUrl.searchParams.get("limit") || 3;
+    const response = await fetch(`${process.env.API_URL}/pack?limit=${limit}`);
     const data = await response.json();
+
+    if (!response.ok) {
+      return NextResponse.json({
+        status: response.status,
+        error: "Pack not found",
+      });
+    }
 
     return NextResponse.json({ status: 200, message: "Pack API", data });
   } catch (error) {
